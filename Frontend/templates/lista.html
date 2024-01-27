@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="..\static\css\lista.css">
+    <title>to-do-list</title>
+    
+</head>
+
+<body>
+
+    <header class="nav">
+        <div class="text">
+            <h1>TO-DO-LIST</h1>
+            <h4>NUESTRAS SIGUIENTES AVENTURAS</h4>
+        </div>
+
+        <div class="nav2">
+            <input type="text" id="nuevaTarea" placeholder="añade una nueva cita">
+            <a href="./inicio.html">go back to the start</a>
+        </div>
+        
+    </header>
+
+    <div class="contenedor">
+        <div class="lado-izquierdo">
+            <div class="tareas-container" id="tareasContainer">
+                <!-- Aquí se agregarán las tareas dinámicamente -->
+            </div>
+
+            <!--ELEMENTO FORM DE PRUEBA-->
+            <form method='POST' action="{{ url_for('lista') }}" enctype='multipart/form-data'>
+                {{ form.hidden_tag() }}
+                {{ form.file() }}
+                {{ form.submit() }}
+            </form>            
+
+        </div>
+
+        <div class="lado-derecho">
+
+            <h2 onclick="mostrarPublicarFoto()">  ¿QUE HICIMOS <br> HASTA AHORA?</h2>
+            <div id="publicarFotoContainer" style="display: none;">
+                <input type="file" id="fotoInput" name="fotoInput">
+                <button onclick="publicarFoto()">publicar</button>
+            </div>
+
+            <div class="fotosContainer" id="fotosContainer">
+                <!-- Aquí se agregarán las fotos dinámicamente -->
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Cargar tareas y fotos desde el almacenamiento local al inicio
+            cargarTareasDesdeLocalStorage();
+            cargarFotosDesdeLocalStorage();
+
+            // Verifica si hay un estado almacenado en el almacenamiento local
+            var publicarFotoVisible = localStorage.getItem('publicarFotoVisible');
+            if (publicarFotoVisible === 'true') {
+                mostrarPublicarFoto();
+            }
+
+            // Agrega un evento para el input 'nuevaTarea' cuando se presiona una tecla
+            document.getElementById('nuevaTarea').addEventListener('keydown', function (event) {
+                // Verifica si la tecla presionada es 'Enter' (código 13)
+                if (event.key === 'Enter') {
+                    agregarTarea();
+                }
+            });
+
+            // Agrega un evento para el botón 'Eliminar' de cada tarea
+            document.getElementById('tareasContainer').addEventListener('click', function (event) {
+                if (event.target.classList.contains('eliminar-btn')) {
+                    eliminarTarea(event.target.parentElement);
+                }
+            });
+        });
+
+        function agregarTarea() {
+            var nuevaTareaTexto = document.getElementById('nuevaTarea').value;
+            if (nuevaTareaTexto.trim() !== '') {
+                var tareasContainer = document.getElementById('tareasContainer');
+                var nuevaTarea = document.createElement('div');
+                nuevaTarea.classList.add('tarea');
+
+                var circuloAzul = document.createElement('div');
+                circuloAzul.classList.add('circulo-azul');
+
+                var textoTarea = document.createElement('span');
+                textoTarea.textContent = nuevaTareaTexto;
+
+                var eliminarBtn = document.createElement('button');
+                eliminarBtn.classList.add('eliminar-btn');
+                eliminarBtn.textContent = 'Eliminar';
+                eliminarBtn.onclick = function () {
+                    eliminarTarea(nuevaTarea);
+                };
+
+                nuevaTarea.appendChild(circuloAzul);
+                nuevaTarea.appendChild(textoTarea);
+                nuevaTarea.appendChild(eliminarBtn);
+
+                tareasContainer.appendChild(nuevaTarea);
+
+                // Limpiar el input después de agregar la tarea
+                document.getElementById('nuevaTarea').value = '';
+
+                // Guardar tareas en el almacenamiento local
+                guardarTareasEnLocalStorage();
+            }
+        }
+
+        function cargarTareasDesdeLocalStorage() {
+            var tareasContainer = document.getElementById('tareasContainer');
+            var tareasGuardadas = localStorage.getItem('tareas');
+
+            if (tareasGuardadas) {
+                tareasContainer.innerHTML = tareasGuardadas;
+            }
+        }
+
+        function guardarTareasEnLocalStorage() {
+            var tareasContainer = document.getElementById('tareasContainer');
+            var tareas = tareasContainer.innerHTML;
+
+            localStorage.setItem('tareas', tareas);
+        }
+
+        function mostrarPublicarFoto() {
+            var publicarFotoContainer = document.getElementById('publicarFotoContainer');
+            publicarFotoContainer.style.display = 'block';
+
+            // Almacena el estado en el almacenamiento local
+            localStorage.setItem('publicarFotoVisible', 'true');
+        }
+
+        function publicarFoto() {
+            var fotoInput = document.getElementById('fotoInput');
+            var publicarFotoContainer = document.getElementById('publicarFotoContainer');
+            var ladoDerechoContainer = document.querySelector('.lado-derecho');
+
+            // Verifica si se seleccionó una imagen
+            if (fotoInput.files.length > 0) {
+                var nuevaFoto = document.createElement('div');
+                nuevaFoto.classList.add('foto');
+
+                var imagen = document.createElement('img');
+                imagen.src = URL.createObjectURL(fotoInput.files[0]);
+                imagen.classList.add('imagen-foto');
+
+                var eliminarBtn = document.createElement('button');
+                eliminarBtn.classList.add('eliminar-btn');
+                eliminarBtn.textContent = 'Eliminar';
+                eliminarBtn.onclick = function () {
+                    eliminarFoto(nuevaFoto);
+                };
+
+                nuevaFoto.appendChild(imagen);
+                nuevaFoto.appendChild(eliminarBtn);
+
+                ladoDerechoContainer.appendChild(nuevaFoto);
+
+                // Guardar la URL de la foto en el almacenamiento local
+                guardarFotoEnLocalStorage(imagen.src);
+                location.reload();
+            }
+
+            // Limpiar el input después de agregar la foto
+            fotoInput.value = '';
+
+            // Oculta la sección de publicar foto
+            publicarFotoContainer.style.display = 'none';
+
+            // Almacena el estado en el almacenamiento local
+            localStorage.setItem('publicarFotoVisible', 'false');
+        }
+
+        function eliminarTarea(tarea) {
+            var tareasContainer = document.getElementById('tareasContainer');
+            tareasContainer.removeChild(tarea);
+
+            // Guardar tareas en el almacenamiento local después de la eliminación
+            guardarTareasEnLocalStorage();
+        }
+
+        function eliminarFoto(foto) {
+            var fotosContainer = document.getElementById('fotosContainer');
+            fotosContainer.removeChild(foto);
+
+            // Eliminar la URL de la foto del almacenamiento local
+            eliminarFotoDeLocalStorage(foto.querySelector('img').src);
+        }
+
+        function guardarFotoEnLocalStorage(url) {
+            var fotos = JSON.parse(localStorage.getItem('fotos')) || [];
+            fotos.push(url);
+            localStorage.setItem('fotos', JSON.stringify(fotos));
+        }
+
+        function cargarFotosDesdeLocalStorage() {
+            var fotosContainer = document.getElementById('fotosContainer');
+            var fotosGuardadas = JSON.parse(localStorage.getItem('fotos'));
+
+            if (fotosGuardadas) {
+                fotosGuardadas.forEach(function (url) {
+                    var nuevaFoto = document.createElement('div');
+                    nuevaFoto.classList.add('foto');
+
+                    var imagen = document.createElement('img');
+                    imagen.src = url;
+                    imagen.classList.add('imagen-foto');
+
+                    var eliminarBtn = document.createElement('button');
+                    eliminarBtn.classList.add('eliminar-btn');
+                    eliminarBtn.textContent = 'Eliminar';
+                    eliminarBtn.onclick = function () {
+                        eliminarFoto(nuevaFoto);
+                    };
+
+                    nuevaFoto.appendChild(imagen);
+                    nuevaFoto.appendChild(eliminarBtn);
+
+                    fotosContainer.appendChild(nuevaFoto);
+                });
+            }
+        }
+
+        function eliminarFotoDeLocalStorage(url) {
+            var fotos = JSON.parse(localStorage.getItem('fotos')) || [];
+            var index = fotos.indexOf(url);
+            if (index !== -1) {
+                fotos.splice(index, 1);
+                localStorage.setItem('fotos', JSON.stringify(fotos));
+            }
+        }
+    </script>
+
+</body>
+
+</html>
