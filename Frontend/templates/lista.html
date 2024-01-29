@@ -30,13 +30,14 @@
                 <!-- Aquí se agregarán las tareas dinámicamente -->
             </div>
 
-            <!--ELEMENTO FORM DE PRUEBA-->
-            <form method='POST' action="{{ url_for('lista') }}" enctype='multipart/form-data'>
+            <!--ELEMENTO FORM DE PRUEBA
+             <form method='POST' action="{{ url_for('lista') }}" enctype='multipart/form-data'>
                 {{ form.hidden_tag() }}
                 {{ form.file() }}
                 {{ form.submit() }}
-            </form>            
-
+            </form>   
+            -->
+                    
         </div>
 
         <div class="lado-derecho">
@@ -45,7 +46,7 @@
             <div id="publicarFotoContainer" style="display: none;">
                 <input type="file" id="fotoInput" name="fotoInput">
                 <button onclick="publicarFoto()">publicar</button>
-            </div>
+            </div>  
 
             <div class="fotosContainer" id="fotosContainer">
                 <!-- Aquí se agregarán las fotos dinámicamente -->
@@ -89,9 +90,6 @@
                 var nuevaTarea = document.createElement('div');
                 nuevaTarea.classList.add('tarea');
 
-                var circuloAzul = document.createElement('div');
-                circuloAzul.classList.add('circulo-azul');
-
                 var textoTarea = document.createElement('span');
                 textoTarea.textContent = nuevaTareaTexto;
 
@@ -102,7 +100,6 @@
                     eliminarTarea(nuevaTarea);
                 };
 
-                nuevaTarea.appendChild(circuloAzul);
                 nuevaTarea.appendChild(textoTarea);
                 nuevaTarea.appendChild(eliminarBtn);
 
