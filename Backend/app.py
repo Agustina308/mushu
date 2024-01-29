@@ -3,9 +3,9 @@ from flask_wtf import FlaskForm
 from wtforms import FileField, SubmitField
 from werkzeug.utils import secure_filename
 from wtforms.validators import InputRequired
+from your_flask_app import create_app
 import os
-
-app = Flask(__name__, template_folder='../Front/templates')
+app = Flask(__name__, template_folder='../Frontend/templates')
 app.config['SECRET_KEY'] = 'supersecretkey'
 app.config['UPLOAD_FOLDER'] = 'static/files'
 
